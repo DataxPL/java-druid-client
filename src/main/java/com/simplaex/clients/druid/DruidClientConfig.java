@@ -24,6 +24,7 @@ public class DruidClientConfig {
 
   private final DruidClient.EventEmitter eventEmitter;
 
+  private final Integer numConnections;
 
   public ObjectMapper getObjectMapper() {
     if (objectMapper == null) {
@@ -58,4 +59,8 @@ public class DruidClientConfig {
     return port != null && port > 0 ? port : 8080;
   }
 
+  @Nonnegative
+  public int getNumConnections() {
+    return numConnections != null && numConnections > 0 ? numConnections : 1;
+  }
 }

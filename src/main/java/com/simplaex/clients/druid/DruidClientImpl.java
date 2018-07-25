@@ -71,7 +71,7 @@ public final class DruidClientImpl implements DruidClient {
     this.queryManager = new QueryManager();
     this.executorService = config.getExecutorService();
     this.druidClient = createDruidClient(config.getHost(), config.getPort(), queryManager, serviceEmitter, executorService,
-      config.getObjectMapper());
+      config.getObjectMapper(), config.getNumConnections());
   }
 
   private static DirectDruidClient createDruidClient(
@@ -80,14 +80,15 @@ public final class DruidClientImpl implements DruidClient {
     final QueryWatcher queryWatcher,
     final ServiceEmitter serviceEmitter,
     final ExecutorService executorService,
-    final ObjectMapper objectMapper
+    final ObjectMapper objectMapper,
+    final int numConnections
   ) {
     final String host = String.format("%s:%d", hostname, port);
     return new DirectDruidClient(
       createQueryToolChestWarehouse(objectMapper, serviceEmitter, queryWatcher, executorService),
       queryWatcher,
       objectMapper,
-      createHttpClient(),
+      createHttpClient(numConnections),
       "http",
       host, serviceEmitter
     );
@@ -292,8 +293,8 @@ public final class DruidClientImpl implements DruidClient {
     return new MapQueryToolChestWarehouse(chestMap);
   }
 
-  private static HttpClient createHttpClient() {
-    final HttpClientConfig httpClientConfig = HttpClientConfig.builder().build();
+  private static HttpClient createHttpClient(final int numConnections) {
+    final HttpClientConfig httpClientConfig = HttpClientConfig.builder().withNumConnections(numConnections).build();
     final Lifecycle lifecycle = new Lifecycle();
     return HttpClientInit.createClient(
       httpClientConfig,
